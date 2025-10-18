@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QuicklyClose App Icon</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .icon-wrapper {
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .icon-wrapper h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        svg {
+            display: block;
+            border: 1px solid #e0e0e0;
+            border-radius: 20%;
+        }
+        .instructions {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .download-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .download-btn:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>📱 QuicklyClose App Icons - Optimized for Mobile</h2>
+        <p>These icons are designed to look crisp and clear on mobile devices.</p>
+        <p><strong>To save:</strong> Right-click each icon and select "Save Image As..." or use the download button.</p>
+        <p><strong>Note:</strong> The icon uses a simplified house logo without text for better visibility at small sizes.</p>
+    </div>
+
+    <div class="container" id="iconContainer"></div>
+
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        
+        function createIcon(size) {
+            const scale = size / 512; // Base design is 512x512
+            
+            const svg = `
+                <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- White background with slight radius for iOS -->
+                    <rect width="${size}" height="${size}" fill="#ffffff" rx="${size * 0.1}"/>
+                    
+                    <!-- Main container with padding -->
+                    <g transform="translate(${size * 0.15}, ${size * 0.15})">
+                        <!-- House shape -->
+                        <path d="M ${size * 0.35} ${size * 0.05}
+                               L ${size * 0.05} ${size * 0.2}
+                               L ${size * 0.05} ${size * 0.55}
+                               L ${size * 0.15} ${size * 0.65}
+                               L ${size * 0.55} ${size * 0.65}
+                               L ${size * 0.65} ${size * 0.55}
+                               L ${size * 0.65} ${size * 0.2}
+                               Z" 
+                              fill="url(#grad${size})" />
+                        
+                        <!-- Window panes -->
+                        <rect x="${size * 0.23}" y="${size * 0.23}" 
+                              width="${size * 0.06}" height="${size * 0.06}" 
+                              fill="white" rx="${size * 0.005}"/>
+                        <rect x="${size * 0.31}" y="${size * 0.23}" 
+                              width="${size * 0.06}" height="${size * 0.06}" 
+                              fill="white" rx="${size * 0.005}"/>
+                        <rect x="${size * 0.23}" y="${size * 0.31}" 
+                              width="${size * 0.06}" height="${size * 0.06}" 
+                              fill="white" rx="${size * 0.005}"/>
+                        <rect x="${size * 0.31}" y="${size * 0.31}" 
+                              width="${size * 0.06}" height="${size * 0.06}" 
+                              fill="white" rx="${size * 0.005}"/>
+                        
+                        <!-- Checkmark -->
+                        <path d="M ${size * 0.1} ${size * 0.45}
+                               L ${size * 0.2} ${size * 0.55}
+                               L ${size * 0.35} ${size * 0.35}" 
+                              stroke="#22c55e" 
+                              stroke-width="${size * 0.04}" 
+                              stroke-linecap="round" 
+                              stroke-linejoin="round" 
+                              fill="none"/>
+                    </g>
+                    
+                    <!-- Gradient -->
+                    <defs>
+                        <linearGradient id="grad${size}" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            `;
+            
+            return svg;
+        }
+        
+        function downloadSVGAsPNG(svgElement, size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            const img = new Image();
+            const svgBlob = new Blob([svgElement], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(svgBlob);
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+                URL.revokeObjectURL(url);
+                
+                canvas.toBlob(function(blob) {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `icon-${size}x${size}.png`;
+                    a.click();
+                });
+            };
+            img.src = url;
+        }
+        
+        const container = document.getElementById('iconContainer');
+        
+        sizes.forEach(size => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'icon-wrapper';
+            
+            const title = document.createElement('h3');
+            title.textContent = `${size}x${size}px`;
+            wrapper.appendChild(title);
+            
+            const iconDiv = document.createElement('div');
+            iconDiv.innerHTML = createIcon(size);
+            wrapper.appendChild(iconDiv);
+            
+            const button = document.createElement('button');
+            button.className = 'download-btn';
+            button.textContent = `Download ${size}x${size}`;
+            button.onclick = () => downloadSVGAsPNG(createIcon(size), size);
+            wrapper.appendChild(button);
+            
+            container.appendChild(wrapper);
+        });
+    </script>
+</body>
+</html>

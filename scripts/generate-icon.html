@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QuicklyClose Icon Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .canvas-container {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        canvas {
+            display: block;
+            margin: 10px auto;
+            border: 1px solid #ddd;
+        }
+        h2 {
+            margin: 0 0 20px 0;
+        }
+        .instructions {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>📱 QuicklyClose App Icon Generator</h2>
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>Right-click on each icon below and select "Save Image As..."</li>
+            <li>Save with the filename shown under each icon</li>
+            <li>Save all files to: <code>public/icons/</code></li>
+        </ol>
+    </div>
+
+    <div id="icons"></div>
+
+    <script>
+        // Icon sizes needed for PWA
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        
+        // Create and draw icon for each size
+        sizes.forEach(size => {
+            const container = document.createElement('div');
+            container.className = 'canvas-container';
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Background - white with slight gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#ffffff');
+            gradient.addColorStop(1, '#f8f9fa');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Calculate dimensions for the house icon
+            const padding = size * 0.15; // 15% padding
+            const iconSize = size - (padding * 2);
+            const lineWidth = Math.max(2, size * 0.025); // Scale line width with icon size
+            
+            // Set up drawing style
+            ctx.strokeStyle = '#2563eb'; // Blue color from the brand
+            ctx.fillStyle = '#2563eb';
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // Draw house outline with checkmark
+            const startX = padding;
+            const startY = padding;
+            
+            // House shape path
+            ctx.beginPath();
+            
+            // Roof - house shape pointing right (like in logo)
+            ctx.moveTo(startX + iconSize * 0.5, startY);
+            ctx.lineTo(startX, startY + iconSize * 0.3);
+            ctx.lineTo(startX, startY + iconSize * 0.9);
+            ctx.lineTo(startX + iconSize * 0.3, startY + iconSize);
+            ctx.lineTo(startX + iconSize * 0.7, startY + iconSize);
+            ctx.lineTo(startX + iconSize, startY + iconSize * 0.9);
+            ctx.lineTo(startX + iconSize, startY + iconSize * 0.3);
+            ctx.closePath();
+            
+            // Fill with gradient
+            const houseGradient = ctx.createLinearGradient(startX, startY, startX + iconSize, startY + iconSize);
+            houseGradient.addColorStop(0, '#3b82f6'); // Lighter blue
+            houseGradient.addColorStop(1, '#2563eb'); // Darker blue
+            ctx.fillStyle = houseGradient;
+            ctx.fill();
+            
+            // Draw window (4 squares) in white
+            ctx.fillStyle = '#ffffff';
+            const windowSize = iconSize * 0.08;
+            const windowGap = windowSize * 0.3;
+            const windowStartX = startX + iconSize * 0.35;
+            const windowStartY = startY + iconSize * 0.35;
+            
+            // Top left window
+            ctx.fillRect(windowStartX, windowStartY, windowSize, windowSize);
+            // Top right window
+            ctx.fillRect(windowStartX + windowSize + windowGap, windowStartY, windowSize, windowSize);
+            // Bottom left window
+            ctx.fillRect(windowStartX, windowStartY + windowSize + windowGap, windowSize, windowSize);
+            // Bottom right window
+            ctx.fillRect(windowStartX + windowSize + windowGap, windowStartY + windowSize + windowGap, windowSize, windowSize);
+            
+            // Draw checkmark
+            ctx.strokeStyle = '#22c55e'; // Green color for checkmark
+            ctx.lineWidth = lineWidth * 1.5;
+            ctx.beginPath();
+            const checkStartX = startX + iconSize * 0.15;
+            const checkStartY = startY + iconSize * 0.65;
+            ctx.moveTo(checkStartX, checkStartY);
+            ctx.lineTo(checkStartX + iconSize * 0.15, checkStartY + iconSize * 0.15);
+            ctx.lineTo(checkStartX + iconSize * 0.35, checkStartY - iconSize * 0.15);
+            ctx.stroke();
+            
+            // Add label
+            const label = document.createElement('div');
+            label.textContent = `icon-${size}x${size}.png`;
+            label.style.fontSize = '12px';
+            label.style.color = '#666';
+            label.style.marginTop = '5px';
+            
+            container.appendChild(canvas);
+            container.appendChild(label);
+            
+            document.getElementById('icons').appendChild(container);
+        });
+    </script>
+</body>
+</html>

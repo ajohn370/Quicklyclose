@@ -1,0 +1,35 @@
+{
+  "mcpServers": {
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "MEMORY_STORE_PATH": "./memory-store.json"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx", 
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./"]
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "puppeteer-mcp-server"]
+    },
+    "vercel": {
+      "command": "npx",
+      "args": ["-y", "vercel-mcp"]
+    },
+    "n8n": {
+      "command": "docker",
+      "args": ["exec", "-i", "-e", "N8N_API_KEY=${N8N_API_KEY}", "-e", "N8N_BASE_URL=${N8N_BASE_URL:-https://quicklyclose.app.n8n.cloud}", "naughty_pascal", "n8n-mcp"],
+      "env": {
+        "N8N_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ZmMzNTYwMy00YzY4LTQyYTgtOTgyMC0yNmVlZWUxODZhNWMiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU1MDE0MjEwfQ.u3IUykw-6HHDGpenRKSwXwlzWr-3ECAHYRLyy7VzlnI",
+        "N8N_BASE_URL": "https://quicklyclose.app.n8n.cloud"
+      }
+    }
+  }
+}

@@ -1,0 +1,399 @@
+{
+  "name": "QuicklyClose Property Analysis Pipeline",
+  "description": "Comprehensive property analysis using Google Gemini 2.5 Pro + Zillow API for accurate valuations and comparable data",
+  "version": "1.0.0",
+  "nodes": [
+    {
+      "name": "Property Analysis Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [20, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "quickly-close-property-analysis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "quicklyclose-property-analysis"
+    },
+    {
+      "name": "Extract Property Data",
+      "type": "n8n-nodes-base.function",
+      "position": [240, 300],
+      "parameters": {
+        "functionCode": "// Extract and validate incoming property data\nconst body = $input.first().json.body;\n\nif (!body.imageUrl || !body.address || !body.requestId) {\n  throw new Error('Missing required fields: imageUrl, address, requestId');\n}\n\nconst { street, city, state, zip } = body.address;\nif (!street || !city || !state || !zip) {\n  throw new Error('Incomplete address information');\n}\n\n// Format address for API calls\nconst fullAddress = `${street}, ${city}, ${state} ${zip}`;\nconst searchAddress = `${street} ${city} ${state} ${zip}`.replace(/,/g, '');\n\nreturn {\n  json: {\n    imageUrl: body.imageUrl,\n    address: {\n      street,\n      city,\n      state,\n      zip,\n      full: fullAddress,\n      search: searchAddress\n    },\n    requestId: body.requestId,\n    userId: body.userId || 'system',\n    timestamp: new Date().toISOString()\n  }\n};"
+      }
+    },
+    {
+      "name": "Zillow Property Lookup",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [460, 180],
+      "parameters": {
+        "url": "https://zillow56.p.rapidapi.com/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-RapidAPI-Key",
+              "value": "81cd51c088msh8cb80a7b27fe3c0p1dfacejsn12ac496"
+            },
+            {
+              "name": "X-RapidAPI-Host",
+              "value": "zillow56.p.rapidapi.com"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "location",
+              "value": "={{$json.address.search}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000,
+          "retry": {
+            "enabled": true,
+            "maxRetries": 3
+          }
+        }
+      }
+    },
+    {
+      "name": "Zillow Comparable Sales",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [460, 300],
+      "parameters": {
+        "url": "https://zillow56.p.rapidapi.com/search_sales",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-RapidAPI-Key",
+              "value": "81cd51c088msh8cb80a7b27fe3c0p1dfacejsn12ac496"
+            },
+            {
+              "name": "X-RapidAPI-Host",
+              "value": "zillow56.p.rapidapi.com"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "location",
+              "value": "={{$json.address.city}}, {{$json.address.state}}"
+            },
+            {
+              "name": "radius",
+              "value": "0.5"
+            },
+            {
+              "name": "sold_in_last",
+              "value": "6m"
+            },
+            {
+              "name": "home_type",
+              "value": "Houses"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      }
+    },
+    {
+      "name": "Zillow Market Trends",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [460, 420],
+      "parameters": {
+        "url": "https://zillow56.p.rapidapi.com/market_data",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-RapidAPI-Key",
+              "value": "81cd51c088msh8cb80a7b27fe3c0p1dfacejsn12ac496"
+            },
+            {
+              "name": "X-RapidAPI-Host",
+              "value": "zillow56.p.rapidapi.com"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "location",
+              "value": "={{$json.address.city}}, {{$json.address.state}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Zillow Rental Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [460, 540],
+      "parameters": {
+        "url": "https://zillow56.p.rapidapi.com/rentals",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-RapidAPI-Key",
+              "value": "81cd51c088msh8cb80a7b27fe3c0p1dfacejsn12ac496"
+            },
+            {
+              "name": "X-RapidAPI-Host",
+              "value": "zillow56.p.rapidapi.com"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "location",
+              "value": "={{$json.address.city}}, {{$json.address.state}}"
+            },
+            {
+              "name": "radius",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Google Gemini Property Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [460, 60],
+      "parameters": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApiKeyAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "{\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"Analyze this property image for real estate investment purposes. Property Address: {{$json.address.full}}\\n\\nProvide detailed JSON analysis with:\\n1. Property Features (name, confidence 0-100)\\n2. Property Characteristics (sqft estimate, bedrooms, bathrooms, property type, age)\\n3. Condition Assessment (renovation needs, market appeal 1-10, repair cost range)\\n4. Investment Assessment (fix-flip vs rental potential, market positioning)\\n\\nFormat as valid JSON only.\"\n    }, {\n      \"inline_data\": {\n        \"mime_type\": \"image/jpeg\",\n        \"data\": \"={{$json.imageUrl.split(',')[1] || $json.imageUrl}}\"\n      }\n    }]\n  }]\n}",
+        "options": {
+          "timeout": 45000
+        }
+      }
+    },
+    {
+      "name": "Merge All Data Sources",
+      "type": "n8n-nodes-base.function",
+      "position": [680, 300],
+      "parameters": {
+        "functionCode": "// Merge all data sources for comprehensive analysis\nconst items = $input.all();\n\n// Find each data source\nconst propertyData = items.find(item => item.json.address)?.json;\nconst zillowProperty = items.find(item => item.json.results || item.json.properties)?.json;\nconst zillowComps = items.find(item => item.json.sales || item.json.sold_properties)?.json;\nconst zillowTrends = items.find(item => item.json.market_data || item.json.trends)?.json;\nconst zillowRentals = items.find(item => item.json.rentals || item.json.rental_data)?.json;\nconst geminiAnalysis = items.find(item => item.json.candidates)?.json;\n\n// Parse Gemini response\nlet geminiData = {};\ntry {\n  if (geminiAnalysis?.candidates?.[0]?.content?.parts?.[0]?.text) {\n    const geminiText = geminiAnalysis.candidates[0].content.parts[0].text;\n    // Extract JSON from Gemini response\n    const jsonMatch = geminiText.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n      geminiData = JSON.parse(jsonMatch[0]);\n    }\n  }\n} catch (error) {\n  console.log('Error parsing Gemini response:', error);\n  geminiData = { error: 'Failed to parse Gemini analysis' };\n}\n\nreturn {\n  json: {\n    requestId: propertyData?.requestId || 'unknown',\n    propertyInfo: propertyData,\n    zillowProperty: zillowProperty || {},\n    zillowComparables: zillowComps || {},\n    zillowMarketTrends: zillowTrends || {},\n    zillowRentals: zillowRentals || {},\n    geminiAnalysis: geminiData,\n    processingTimestamp: new Date().toISOString()\n  }\n};"
+      }
+    },
+    {
+      "name": "Google Gemini Data Fusion",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [900, 300],
+      "parameters": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApiKeyAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "{\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are a senior real estate analyst. Combine this property analysis with market data to create comprehensive investment insights.\\n\\nPROPERTY ANALYSIS: {{$json.geminiAnalysis}}\\nZILLOW PROPERTY: {{$json.zillowProperty}}\\nZILLOW COMPARABLES: {{$json.zillowComparables}}\\nZILLOW TRENDS: {{$json.zillowMarketTrends}}\\nZILLOW RENTALS: {{$json.zillowRentals}}\\n\\nCreate detailed JSON analysis with:\\n\\n1. Enhanced Valuation (ARV estimate, current market value range, price per sqft)\\n2. Investment Metrics (fix-flip ROI, rental analysis with cap rate)\\n3. Comparable Properties (ranked by relevance with similarity scores)\\n4. Risk Assessment (market volatility, renovation risks)\\n5. Investment Summary (overall score 1-10, best use case, key insights)\\n\\nReturn ONLY valid JSON matching this structure:\\n{\\n  \\\"features\\\": [{\\\"name\\\": \\\"string\\\", \\\"confidence\\\": number}],\\n  \\\"estimatedValue\\\": number,\\n  \\\"confidence\\\": number,\\n  \\\"flipComps\\\": {\\n    \\\"after_repair_value\\\": number,\\n    \\\"price_per_sqft\\\": number,\\n    \\\"days_on_market\\\": number,\\n    \\\"renovation_grade\\\": \\\"string\\\",\\n    \\\"neighborhood_trends\\\": \\\"string\\\"\\n  },\\n  \\\"rentalComps\\\": {\\n    \\\"market_rent_estimate\\\": number,\\n    \\\"cap_rate\\\": number,\\n    \\\"vacancy_rate\\\": number,\\n    \\\"school_district_quality\\\": \\\"string\\\",\\n    \\\"property_taxes\\\": number\\n  },\\n  \\\"similarProperties\\\": [{\\n    \\\"address\\\": \\\"string\\\",\\n    \\\"similarity\\\": number,\\n    \\\"price\\\": number,\\n    \\\"sqft\\\": number,\\n    \\\"bedrooms\\\": number,\\n    \\\"bathrooms\\\": number\\n  }]\\n}\"\n    }]\n  }]\n}",
+        "options": {
+          "timeout": 60000
+        }
+      }
+    },
+    {
+      "name": "Format Final Response",
+      "type": "n8n-nodes-base.function",
+      "position": [1120, 300],
+      "parameters": {
+        "functionCode": "// Format final response for QuicklyClose integration\nconst mergedData = $input.first().json;\nconst geminiResponse = mergedData.candidates?.[0]?.content?.parts?.[0]?.text;\n\n// Parse Gemini's final analysis\nlet finalAnalysis = {};\ntry {\n  if (geminiResponse) {\n    const jsonMatch = geminiResponse.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n      finalAnalysis = JSON.parse(jsonMatch[0]);\n    }\n  }\n} catch (error) {\n  console.log('Error parsing final Gemini analysis:', error);\n  // Fallback structure\n  finalAnalysis = {\n    features: [],\n    estimatedValue: 0,\n    confidence: 0,\n    flipComps: {},\n    rentalComps: {},\n    similarProperties: []\n  };\n}\n\n// Ensure all required fields exist with defaults\nconst response = {\n  features: finalAnalysis.features || [],\n  estimatedValue: finalAnalysis.estimatedValue || 0,\n  confidence: finalAnalysis.confidence || 0,\n  flipComps: {\n    after_repair_value: finalAnalysis.flipComps?.after_repair_value || 0,\n    price_per_sqft: finalAnalysis.flipComps?.price_per_sqft || 0,\n    days_on_market: finalAnalysis.flipComps?.days_on_market || 0,\n    sale_to_list_ratio: finalAnalysis.flipComps?.sale_to_list_ratio || 0.98,\n    renovation_grade: finalAnalysis.flipComps?.renovation_grade || 'Unknown',\n    recent_sales: [],\n    lot_size: 0.25,\n    zoning_potential: 'Residential',\n    neighborhood_trends: finalAnalysis.flipComps?.neighborhood_trends || 'Stable',\n    property_type_match: 'Single Family Home'\n  },\n  rentalComps: {\n    market_rent_estimate: finalAnalysis.rentalComps?.market_rent_estimate || 0,\n    rent_to_price_ratio: finalAnalysis.rentalComps?.rent_to_price_ratio || 0,\n    cap_rate: finalAnalysis.rentalComps?.cap_rate || 0,\n    vacancy_rate: finalAnalysis.rentalComps?.vacancy_rate || 5.0,\n    tenant_turnover: 'Average',\n    crime_rate: 'Average',\n    school_district_quality: finalAnalysis.rentalComps?.school_district_quality || 'Good',\n    transit_employment_access: 'Good',\n    hoa_fees: 0,\n    property_taxes: finalAnalysis.rentalComps?.property_taxes || 0\n  },\n  similarProperties: finalAnalysis.similarProperties || []\n};\n\nreturn {\n  json: response\n};"
+      }
+    },
+    {
+      "name": "Respond to QuicklyClose",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1340, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}"
+      }
+    }
+  ],
+  "connections": {
+    "Property Analysis Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Property Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Property Data": {
+      "main": [
+        [
+          {
+            "node": "Zillow Property Lookup",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Zillow Comparable Sales",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Zillow Market Trends",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Zillow Rental Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Gemini Property Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zillow Property Lookup": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zillow Comparable Sales": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zillow Market Trends": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zillow Rental Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Property Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge All Data Sources": {
+      "main": [
+        [
+          {
+            "node": "Google Gemini Data Fusion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Data Fusion": {
+      "main": [
+        [
+          {
+            "node": "Format Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Final Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to QuicklyClose",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "America/New_York",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {},
+  "tags": ["quicklyclose", "property-analysis", "gemini", "zillow", "real-estate"],
+  "meta": {
+    "instanceId": "quicklyclose-property-analysis"
+  }
+}

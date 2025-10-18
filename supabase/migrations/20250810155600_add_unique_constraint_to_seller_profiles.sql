@@ -1,0 +1,1 @@
+ALTER TABLE "public"."seller_profiles" ADD CONSTRAINT "seller_profiles_user_id_key" UNIQUE ("user_id");

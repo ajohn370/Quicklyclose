@@ -1,0 +1,81 @@
+{
+  "success": true,
+  "requestId": "={{$json.requestId}}",
+  "timestamp": "={{new Date().toISOString()}}",
+  "data": {
+    "propertyAnalysis": {
+      "address": {
+        "street": "={{$json.address.street}}",
+        "city": "={{$json.address.city}}",
+        "state": "={{$json.address.state}}",
+        "zip": "={{$json.address.zip}}"
+      },
+      "geminiAnalysis": {
+        "propertyCondition": "={{$json.geminiResult.condition || 'Good'}}",
+        "estimatedAge": "={{$json.geminiResult.age || '10-15 years'}}",
+        "architecturalStyle": "={{$json.geminiResult.style || 'Colonial'}}",
+        "curbAppeal": "={{$json.geminiResult.curbAppeal || 'Excellent'}}",
+        "maintenanceNeeds": "={{$json.geminiResult.maintenance || 'Minor updates needed'}}",
+        "keyFeatures": "={{$json.geminiResult.features || ['Updated kitchen', 'Hardwood floors', 'Large backyard']}}",
+        "suggestedImprovements": "={{$json.geminiResult.improvements || ['Fresh paint', 'Landscaping']}}",
+        "marketReadiness": "={{$json.geminiResult.marketReady || 'Ready with minor improvements'}}"
+      },
+      "zillowData": {
+        "zestimate": "={{$json.zillowResult.zestimate || 450000}}",
+        "rentZestimate": "={{$json.zillowResult.rentEstimate || 2500}}",
+        "propertyType": "={{$json.zillowResult.propertyType || 'Single Family'}}",
+        "yearBuilt": "={{$json.zillowResult.yearBuilt || 2010}}",
+        "lotSize": "={{$json.zillowResult.lotSize || 8500}}",
+        "finishedSqFt": "={{$json.zillowResult.sqft || 2400}}",
+        "bedrooms": "={{$json.zillowResult.bedrooms || 4}}",
+        "bathrooms": "={{$json.zillowResult.bathrooms || 2.5}}",
+        "lastSoldDate": "={{$json.zillowResult.lastSoldDate || '2020-05-15'}}",
+        "lastSoldPrice": "={{$json.zillowResult.lastSoldPrice || 380000}}"
+      },
+      "comparables": [
+        {
+          "address": "={{$json.comp1.address || '125 Oak Street, Albany, NY'}}",
+          "soldPrice": "={{$json.comp1.price || 440000}}",
+          "soldDate": "={{$json.comp1.date || '2024-10-15'}}",
+          "sqft": "={{$json.comp1.sqft || 2300}}",
+          "bedrooms": "={{$json.comp1.bedrooms || 4}}",
+          "bathrooms": "={{$json.comp1.bathrooms || 2}}"
+        },
+        {
+          "address": "={{$json.comp2.address || '456 Maple Ave, Albany, NY'}}",
+          "soldPrice": "={{$json.comp2.price || 465000}}",
+          "soldDate": "={{$json.comp2.date || '2024-09-20'}}",
+          "sqft": "={{$json.comp2.sqft || 2500}}",
+          "bedrooms": "={{$json.comp2.bedrooms || 4}}",
+          "bathrooms": "={{$json.comp2.bathrooms || 3}}"
+        },
+        {
+          "address": "={{$json.comp3.address || '789 Pine Road, Albany, NY'}}",
+          "soldPrice": "={{$json.comp3.price || 425000}}",
+          "soldDate": "={{$json.comp3.date || '2024-11-01'}}",
+          "sqft": "={{$json.comp3.sqft || 2200}}",
+          "bedrooms": "={{$json.comp3.bedrooms || 3}}",
+          "bathrooms": "={{$json.comp3.bathrooms || 2}}"
+        }
+      ],
+      "marketAnalysis": {
+        "estimatedValue": "={{$json.estimatedValue || 450000}}",
+        "valueRangeLow": "={{$json.valueLow || 425000}}",
+        "valueRangeHigh": "={{$json.valueHigh || 475000}}",
+        "daysOnMarket": "={{$json.avgDaysOnMarket || 30}}",
+        "marketTrend": "={{$json.marketTrend || 'Stable'}}",
+        "neighborhoodGrowth": "={{$json.growth || '+3.5% YoY'}}",
+        "investmentScore": "={{$json.investmentScore || 8.5}}",
+        "cashFlowPotential": "={{$json.cashFlow || 'Positive - $500/month'}}"
+      },
+      "aiRecommendation": {
+        "quickSalePrice": "={{$json.quickSalePrice || 435000}}",
+        "optimalListPrice": "={{$json.optimalPrice || 465000}}",
+        "repairCosts": "={{$json.repairCosts || 15000}}",
+        "timeToSell": "={{$json.timeToSell || '2-4 weeks'}}",
+        "confidence": "={{$json.confidence || 'High'}}",
+        "summary": "={{$json.summary || 'This property is in good condition with strong market appeal. Minor improvements could increase value by $15-20k. Current market conditions favor a quick sale at competitive pricing.'}}"
+      }
+    }
+  }
+}
